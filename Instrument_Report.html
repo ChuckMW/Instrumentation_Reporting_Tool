@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Instrumentation Report Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .form-control, .btn {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            border: 1px solid #333;
+        }
+        .btn-primary {
+            background-color: #6200ea;
+            border: none;
+        }
+        .btn-success {
+            background-color: #03dac6;
+            border: none;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .form-label {
+            color: #b0bec5;
+        }
+        #pdfContent {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #000000;
+            padding: 20px;
+            margin: 0;
+        }
+        #pdfContent h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #pdfContent h3 {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        #pdfContent p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        #pdfContent hr {
+            border: 0;
+            border-top: 1px solid #ccc;
+            margin: 10px 0;
+        }
+        #pdfContent .section {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Instrumentation Report Generator</h1>
+        <form id="instrumentForm">
+            <div class="mb-3">
+                <label for="docHeader" class="form-label">Document Header:</label>
+                <input type="text" id="docHeader" class="form-control" placeholder="Enter the document header">
+            </div>
+            <div class="mb-3">
+                <label for="docInfo" class="form-label">Document Information:</label>
+                <textarea id="docInfo" class="form-control" rows="3" placeholder="Enter details about the document (e.g., purpose, author, etc.)"></textarea>
+            </div>
+            <div id="instrumentContainer">
+                <div class="instrument mb-3">
+                    <h3>Instrument 1</h3>
+                    <div class="mb-3">
+                        <label class="form-label">Instrument Type:</label>
+                        <input type="text" class="form-control instrumentType" placeholder="e.g., Pressure Transmitter">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Manufacturer:</label>
+                        <input type="text" class="form-control manufacturer" placeholder="e.g., Yokogawa">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Model:</label>
+                        <input type="text" class="form-control model" placeholder="e.g., EJA530E">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Range:</label>
+                        <input type="text" class="form-control range" placeholder="e.g., 0-100 PSI">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Accuracy:</label>
+                        <input type="text" class="form-control accuracy" placeholder="e.g., ±0.1%">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Calibration Date:</label>
+                        <input type="date" class="form-control lastCalibrationDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Inspection Result:</label>
+                        <textarea class="form-control inspectionResult" rows="3" placeholder="e.g., Passed, adjustments needed, etc."></textarea>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="addInstrument" class="btn btn-primary mb-3">Add Another Instrument</button>
+            <button type="button" id="generatePdf" class="btn btn-success">Generate PDF</button>
+        </form>
+    </div>
+
+    <div id="pdfContent" style="display:none">
+        <h1 id="pdfHeader"></h1>
+        <p id="pdfInfo" class="section"></p>
+        <div id="pdfInstruments" class="section"></div>
+    </div>
+
+    <script>
+        let instrumentCount = 1;
+
+        document.getElementById('addInstrument').addEventListener('click', () => {
+            instrumentCount++;
+            const container = document.getElementById('instrumentContainer');
+            const instrumentHtml = `
+                <div class="instrument mb-3">
+                    <h3>Instrument ${instrumentCount}</h3>
+                    <div class="mb-3">
+                        <label class="form-label">Instrument Type:</label>
+                        <input type="text" class="form-control instrumentType" placeholder="e.g., Pressure Transmitter">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Manufacturer:</label>
+                        <input type="text" class="form-control manufacturer" placeholder="e.g., Yokogawa">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Model:</label>
+                        <input type="text" class="form-control model" placeholder="e.g., EJA530E">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Range:</label>
+                        <input type="text" class="form-control range" placeholder="e.g., 0-100 PSI">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Accuracy:</label>
+                        <input type="text" class="form-control accuracy" placeholder="e.g., ±0.1%">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Calibration Date:</label>
+                        <input type="date" class="form-control lastCalibrationDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Inspection Result:</label>
+                        <textarea class="form-control inspectionResult" rows="3" placeholder="e.g., Passed, adjustments needed, etc."></textarea>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', instrumentHtml);
+        });
+
+        document.getElementById('generatePdf').addEventListener('click', () => {
+            // Populate the PDF content
+            const header = document.getElementById('docHeader').value || 'Instrumentation Report';
+            const info = document.getElementById('docInfo').value || 'No additional information provided.';
+            document.getElementById('pdfHeader').innerText = header;
+            document.getElementById('pdfInfo').innerText = info;
+
+            const instruments = document.querySelectorAll('.instrument');
+            const pdfInstruments = document.getElementById('pdfInstruments');
+            pdfInstruments.innerHTML = ''; // Clear previous content
+
+            instruments.forEach((inst, index) => {
+                const type = inst.querySelector('.instrumentType').value || 'N/A';
+                const manufacturer = inst.querySelector('.manufacturer').value || 'N/A';
+                const model = inst.querySelector('.model').value || 'N/A';
+                const range = inst.querySelector('.range').value || 'N/A';
+                const accuracy = inst.querySelector('.accuracy').value || 'N/A';
+                const lastCalibrationDate = inst.querySelector('.lastCalibrationDate').value || 'N/A';
+                const inspectionResult = inst.querySelector('.inspectionResult').value || 'N/A';
+
+                const instrumentHtml = `
+                    <h3>Instrument ${index + 1}</h3>
+                    <p><strong>Type:</strong> ${type}</p>
+                    <p><strong>Manufacturer:</strong> ${manufacturer}</p>
+                    <p><strong>Model:</strong> ${model}</p>
+                    <p><strong>Range:</strong> ${range}</p>
+                    <p><strong>Accuracy:</strong> ${accuracy}</p>
+                    <p><strong>Last Calibration Date:</strong> ${lastCalibrationDate}</p>
+                    <p><strong>Inspection Result:</strong> ${inspectionResult}</p>
+                    <hr>
+                `;
+                pdfInstruments.innerHTML += instrumentHtml;
+            });
+
+            // Temporarily make the content visible for PDF generation
+            const pdfContent = document.getElementById('pdfContent');
+            pdfContent.style.display = 'block';
+
+            html2pdf()
+                .set({
+                    margin: 10,
+                    filename: 'instrumentation_report.pdf',
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { orientation: 'portrait' }
+                })
+                .from(pdfContent)
+                .save()
+                .then(() => {
+                    // Hide the content again after PDF generation
+                    pdfContent.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('PDF Generation Error:', error);
+                    alert('An error occurred while generating the PDF.');
+                });
+        });
+    </script>
+</body>
+</html>
+
