@@ -332,14 +332,35 @@
             // Prepare calibration chart images and error tables
             const chartImages = [];
             const errorTables = [];
-            for (const inst of instruments) {
-                const calData = inst.querySelector('.calibrationData').value.split(',').map(Number);
-                const actData = inst.querySelector('.actualData').value.split(',').map(Number);
-                // Calculate % error
+            const calNums = [];
+
+            // Generate calibration numbers ONCE per instrument for this report
+            instruments.forEach((inst, idx) => {
+                const calNum = generateCalibrationNumber(idx);
+                calNums.push(calNum);
+            });
+
+            instruments.forEach((inst, idx) => {
+                const type = inst.querySelector('.instrumentType').value;
+                const manufacturer = inst.querySelector('.manufacturer').value;
+                const model = inst.querySelector('.model').value;
+                const range = inst.querySelector('.range').value;
+                const accuracy = inst.querySelector('.accuracy').value;
+                const lastCal = inst.querySelector('.lastCalibrationDate').value;
+                const newCal = inst.querySelector('.newCalibrationDate').value;
+                const result = inst.querySelector('.inspectionResult').value;
+                const desc = inst.querySelector('.inspectionDescription').value;
+                const calData = inst.querySelector('.calibrationData').value;
+                const actData = inst.querySelector('.actualData').value;
+                const calNum = calNums[idx];
+
+                // Calculate % error table
+                const calDataArr = calData.split(',').map(Number);
+                const actDataArr = actData.split(',').map(Number);
                 let errorRows = '';
-                for (let i = 0; i < Math.max(calData.length, actData.length); i++) {
-                    const cal = calData[i];
-                    const act = actData[i];
+                for (let i = 0; i < Math.max(calDataArr.length, actDataArr.length); i++) {
+                    const cal = calDataArr[i];
+                    const act = actDataArr[i];
                     let err = '';
                     if (typeof cal === 'number' && !isNaN(cal) && typeof act === 'number' && !isNaN(act)) {
                         if (cal === 0) {
@@ -374,21 +395,6 @@
                 `);
                 const canvas = inst.querySelector('.calibrationChart');
                 chartImages.push(canvas ? canvas.toDataURL('image/png') : null);
-            }
-
-            instruments.forEach((inst, idx) => {
-                const type = inst.querySelector('.instrumentType').value;
-                const manufacturer = inst.querySelector('.manufacturer').value;
-                const model = inst.querySelector('.model').value;
-                const range = inst.querySelector('.range').value;
-                const accuracy = inst.querySelector('.accuracy').value;
-                const lastCal = inst.querySelector('.lastCalibrationDate').value;
-                const newCal = inst.querySelector('.newCalibrationDate').value;
-                const result = inst.querySelector('.inspectionResult').value;
-                const desc = inst.querySelector('.inspectionDescription').value;
-                const calData = inst.querySelector('.calibrationData').value;
-                const actData = inst.querySelector('.actualData').value;
-                const calNum = generateCalibrationNumber(idx);
 
                 instrumentsHtml += `
                     <div class="instrument-section">
@@ -432,12 +438,14 @@
             form.style.display = 'none';
             pdfContent.style.display = 'block';
 
-            // Fix for html2pdf top margin: set margin to a small value and remove padding-top from pdfContent
+            // Filename includes all calibration numbers
+            const filename = `Instrumentation_Report_${dateStr}_${calNums.join('_')}.pdf`;
+
             setTimeout(() => {
                 html2pdf()
                     .set({
-                        margin: [0.2, 0.3, 0.3, 0.3], // top, right, bottom, left (inches)
-                        filename: `Instrumentation_Report_${dateStr}.pdf`,
+                        margin: [0.2, 0.3, 0.3, 0.3],
+                        filename: filename,
                         image: { type: 'jpeg', quality: 0.98 },
                         html2canvas: { scale: 2, backgroundColor: '#fff', scrollY: 0 },
                         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
