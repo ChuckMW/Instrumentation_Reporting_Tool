@@ -118,8 +118,19 @@
                         <input type="date" class="form-control lastCalibrationDate">
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">New Calibration Date:</label>
+                        <input type="date" class="form-control newCalibrationDate">
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Inspection Result:</label>
-                        <textarea class="form-control inspectionResult" rows="3" placeholder="e.g., Passed, adjustments needed, etc."></textarea>
+                        <select class="form-control inspectionResult">
+                            <option value="Pass">Pass</option>
+                            <option value="Fail">Fail</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Inspection Description:</label>
+                        <textarea class="form-control inspectionDescription" rows="2" placeholder="Describe inspection findings..."></textarea>
                     </div>
                 </div>
             </div>
@@ -170,20 +181,33 @@
                     <input type="date" class="form-control lastCalibrationDate">
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">New Calibration Date:</label>
+                    <input type="date" class="form-control newCalibrationDate">
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Inspection Result:</label>
-                    <textarea class="form-control inspectionResult" rows="3" placeholder="e.g., Passed, adjustments needed, etc."></textarea>
+                    <select class="form-control inspectionResult">
+                        <option value="Pass">Pass</option>
+                        <option value="Fail">Fail</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Inspection Description:</label>
+                    <textarea class="form-control inspectionDescription" rows="2" placeholder="Describe inspection findings..."></textarea>
                 </div>
             `;
             container.appendChild(instrumentDiv);
         });
 
         document.getElementById('generatePdf').addEventListener('click', () => {
-            // Copy form data to pdfContent
             document.getElementById('pdfHeader').textContent = document.getElementById('docHeader').value;
             document.getElementById('pdfInfo').textContent = document.getElementById('docInfo').value;
 
             const instruments = document.querySelectorAll('#instrumentContainer .instrument');
             let instrumentsHtml = '';
+            const today = new Date();
+            const dateStr = today.toISOString().slice(0,10);
+
             instruments.forEach((inst, idx) => {
                 const type = inst.querySelector('.instrumentType').value;
                 const manufacturer = inst.querySelector('.manufacturer').value;
@@ -191,35 +215,38 @@
                 const range = inst.querySelector('.range').value;
                 const accuracy = inst.querySelector('.accuracy').value;
                 const lastCal = inst.querySelector('.lastCalibrationDate').value;
+                const newCal = inst.querySelector('.newCalibrationDate').value;
                 const result = inst.querySelector('.inspectionResult').value;
+                const desc = inst.querySelector('.inspectionDescription').value;
+
+                // Unique calibration number: e.g., CAL-2025-05-19-1
+                const calNum = `CAL-${dateStr.replace(/-/g, '')}-${idx + 1}`;
 
                 instrumentsHtml += `
                     <div class="instrument-section">
                         <h3>Instrument ${idx + 1}</h3>
+                        <p><strong>Calibration Number:</strong> ${calNum}</p>
                         <p><strong>Type:</strong> ${type}</p>
                         <p><strong>Manufacturer:</strong> ${manufacturer}</p>
                         <p><strong>Model:</strong> ${model}</p>
                         <p><strong>Range:</strong> ${range}</p>
                         <p><strong>Accuracy:</strong> ${accuracy}</p>
                         <p><strong>Last Calibration Date:</strong> ${lastCal}</p>
+                        <p><strong>New Calibration Date:</strong> ${newCal}</p>
                         <p><strong>Inspection Result:</strong> ${result}</p>
+                        <p><strong>Inspection Description:</strong> ${desc}</p>
                     </div>
                 `;
             });
             document.getElementById('pdfInstruments').innerHTML = instrumentsHtml;
 
-            // Add footer with generation date
-            const today = new Date();
-            const dateStr = today.toISOString().slice(0,10);
             document.getElementById('pdfFooter').textContent = `Report generated on ${dateStr}`;
 
-            // Hide the form and show the PDF content
             const form = document.getElementById('instrumentForm');
             const pdfContent = document.getElementById('pdfContent');
             form.style.display = 'none';
             pdfContent.style.display = 'block';
 
-            // Generate filename with date
             const filename = `Instrumentation_Report_${dateStr}.pdf`;
 
             setTimeout(() => {
