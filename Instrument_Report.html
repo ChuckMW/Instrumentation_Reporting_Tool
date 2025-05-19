@@ -36,47 +36,76 @@
         font-family: Arial, sans-serif;
         line-height: 1.6;
         color: #000000;
-        padding: 20px;
+        padding: 10px 20px 20px 20px;
         margin: 0;
         background: #f8f9fa;
         min-height: 100vh;
+        box-sizing: border-box;
     }
     #pdfContent h1 {
         font-size: 28px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
+        margin-top: 0;
         text-align: center;
         color: #333;
+        padding-top: 0;
     }
     #pdfContent h3 {
         font-size: 20px;
-        margin-top: 20px;
+        margin-top: 16px;
         color: #222;
+        border-bottom: 1px solid #bbb;
+        padding-bottom: 4px;
     }
     #pdfContent .instrument-section {
         border: 1px solid #bbb;
         border-radius: 8px;
         background: #fff;
         padding: 16px 20px;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        page-break-inside: avoid;
     }
     #pdfContent p {
-        margin: 5px 0;
+        margin: 4px 0;
         font-size: 15px;
     }
-    #pdfContent hr {
-        border: 0;
-        border-top: 1px solid #ccc;
-        margin: 10px 0;
+    #pdfContent .data-label {
+        color: #555;
+        font-weight: bold;
+    }
+    #pdfContent .cal-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+        background: #fafbfc;
+    }
+    #pdfContent .cal-table th, #pdfContent .cal-table td {
+        border: 1px solid #bbb;
+        padding: 4px 6px;
+        text-align: center;
+    }
+    #pdfContent .cal-table th {
+        background: #f0f0f0;
+    }
+    #pdfContent .cal-graph {
+        max-width: 400px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        background: #fff;
     }
     #pdfContent .section {
-        margin-bottom: 20px;
+        margin-bottom: 18px;
     }
     #pdfFooter {
         text-align: right;
         font-size: 12px;
         color: #888;
-        margin-top: 40px;
+        margin-top: 30px;
     }
     </style>
 </head>
@@ -147,6 +176,12 @@
                         <canvas class="calibrationChart" width="400" height="200" style="background:#fff;"></canvas>
                     </div>
                 </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Inspector Signature:</label><br>
+                <canvas id="signaturePad" width="400" height="120" style="border:1px solid #ccc; background:#fff;"></canvas>
+                <br>
+                <button type="button" id="clearSignature" class="btn btn-secondary btn-sm mt-2">Clear Signature</button>
             </div>
             <button type="button" id="addInstrument" class="btn btn-primary mb-3">Add Another Instrument</button>
             <button type="button" id="generatePdf" class="btn btn-success">Generate PDF</button>
@@ -286,7 +321,7 @@
             const today = new Date();
             const dateStr = today.toISOString().slice(0,10);
 
-            // Prepare calibration chart images
+            // Prepare calibration chart images and error tables
             const chartImages = [];
             const errorTables = [];
             for (const inst of instruments) {
@@ -315,13 +350,13 @@
                     </tr>`;
                 }
                 errorTables.push(`
-                    <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+                    <table class="cal-table">
                         <thead>
-                            <tr style="background:#eee;">
-                                <th style="border:1px solid #ccc;padding:4px;">Point</th>
-                                <th style="border:1px solid #ccc;padding:4px;">Calibration</th>
-                                <th style="border:1px solid #ccc;padding:4px;">Actual</th>
-                                <th style="border:1px solid #ccc;padding:4px;">% Error</th>
+                            <tr>
+                                <th>Point</th>
+                                <th>Calibration</th>
+                                <th>Actual</th>
+                                <th>% Error</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -350,20 +385,25 @@
                 instrumentsHtml += `
                     <div class="instrument-section">
                         <h3>Instrument ${idx + 1}</h3>
-                        <p><strong>Calibration Number:</strong> ${calNum}</p>
-                        <p><strong>Type:</strong> ${type}</p>
-                        <p><strong>Manufacturer:</strong> ${manufacturer}</p>
-                        <p><strong>Model:</strong> ${model}</p>
-                        <p><strong>Range:</strong> ${range}</p>
-                        <p><strong>Accuracy:</strong> ${accuracy}</p>
-                        <p><strong>Last Calibration Date:</strong> ${lastCal}</p>
-                        <p><strong>New Calibration Date:</strong> ${newCal}</p>
-                        <p><strong>Inspection Result:</strong> ${result}</p>
-                        <p><strong>Inspection Description:</strong> ${desc}</p>
-                        <p><strong>Calibration Data:</strong> ${calData}</p>
-                        <p><strong>Actual Values:</strong> ${actData}</p>
-                        <img src="${chartImages[idx]}" alt="Calibration Graph" style="max-width:400px; border:1px solid #ccc; margin:10px 0;">
-                        <div><strong>Calibration Error Table:</strong>${errorTables[idx]}</div>
+                        <p><span class="data-label">Calibration Number:</span> ${calNum}</p>
+                        <p><span class="data-label">Type:</span> ${type}</p>
+                        <p><span class="data-label">Manufacturer:</span> ${manufacturer}</p>
+                        <p><span class="data-label">Model:</span> ${model}</p>
+                        <p><span class="data-label">Range:</span> ${range}</p>
+                        <p><span class="data-label">Accuracy:</span> ${accuracy}</p>
+                        <p><span class="data-label">Last Calibration Date:</span> ${lastCal}</p>
+                        <p><span class="data-label">New Calibration Date:</span> ${newCal}</p>
+                        <p><span class="data-label">Inspection Result:</span> ${result}</p>
+                        <p><span class="data-label">Inspection Description:</span> ${desc}</p>
+                        <p><span class="data-label">Calibration Data:</span> ${calData}</p>
+                        <p><span class="data-label">Actual Values:</span> ${actData}</p>
+                        <div style="margin:18px 0 0 0; text-align:center;">
+                            <img src="${chartImages[idx]}" alt="Calibration Graph" class="cal-graph">
+                            <div style="margin-top:10px;">
+                                <strong>Calibration Error Table:</strong>
+                                ${errorTables[idx]}
+                            </div>
+                        </div>
                     </div>
                 `;
             });
@@ -384,15 +424,14 @@
             form.style.display = 'none';
             pdfContent.style.display = 'block';
 
-            const filename = `Instrumentation_Report_${dateStr}.pdf`;
-
+            // Fix for html2pdf top margin: set margin to a small value and remove padding-top from pdfContent
             setTimeout(() => {
                 html2pdf()
                     .set({
-                        margin: 0.5,
-                        filename: filename,
+                        margin: [0.2, 0.3, 0.3, 0.3], // top, right, bottom, left (inches)
+                        filename: `Instrumentation_Report_${dateStr}.pdf`,
                         image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2, backgroundColor: '#fff' },
+                        html2canvas: { scale: 2, backgroundColor: '#fff', scrollY: 0 },
                         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                     })
                     .from(pdfContent)
