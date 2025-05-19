@@ -32,103 +32,124 @@
     .form-label {
         color: #b0bec5;
     }
+
+    /* --- PDF Styling --- */
     #pdfContent {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        color: #000000;
-        padding: 10px 20px 20px 20px;
-        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        line-height: 1.5;
+        color: #222;
         background: #f8f9fa;
+        padding: 18px 24px 24px 24px;
+        margin: 0;
         min-height: 100vh;
         box-sizing: border-box;
-        /* Add these: */
         word-break: break-word;
     }
     #pdfContent h1 {
-        font-size: 28px;
-        margin-bottom: 10px;
+        font-size: 30px;
+        margin-bottom: 14px;
         margin-top: 0;
         text-align: center;
-        color: #333;
-        padding-top: 0;
+        color: #4B2991;
+        letter-spacing: 1px;
+        font-weight: 700;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 8px;
     }
     #pdfContent h3 {
         font-size: 20px;
-        margin-top: 16px;
+        margin-top: 18px;
         color: #222;
         border-bottom: 1px solid #bbb;
         padding-bottom: 4px;
+        font-weight: 600;
+        background: #f3f0fa;
+        padding-left: 8px;
     }
     #pdfContent .instrument-section {
-        border: 1px solid #bbb;
-        border-radius: 8px;
+        border: 1.5px solid #b8a1e3;
+        border-radius: 10px;
         background: #fff;
-        padding: 16px 20px;
-        margin-bottom: 18px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(75,41,145,0.06);
         page-break-inside: avoid;
         break-inside: avoid;
-        margin-bottom: 18px;
     }
     #pdfContent p {
         margin: 4px 0;
         font-size: 15px;
     }
     #pdfContent .data-label {
-        color: #555;
+        color: #4B2991;
         font-weight: bold;
     }
     #pdfContent .cal-table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
+        margin-top: 12px;
         font-size: 14px;
         background: #fafbfc;
-        /* Add these: */
         page-break-inside: auto;
         break-inside: auto;
         word-break: break-word;
+        box-shadow: 0 1px 4px rgba(75,41,145,0.04);
     }
     #pdfContent .cal-table th, #pdfContent .cal-table td {
-        border: 1px solid #bbb;
-        padding: 4px 6px;
+        border: 1px solid #b8a1e3;
+        padding: 6px 8px;
         text-align: center;
     }
     #pdfContent .cal-table th {
-        background: #f0f0f0;
+        background: #ede7f6;
+        color: #4B2991;
+        font-weight: 600;
     }
     #pdfContent .cal-graph {
         max-width: 400px;
-        border: 1px solid #ccc;
+        border: 1.5px solid #b8a1e3;
         margin-bottom: 10px;
         display: block;
         margin-left: auto;
         margin-right: auto;
         background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(75,41,145,0.07);
     }
     #pdfContent .section {
         margin-bottom: 18px;
         page-break-inside: avoid;
         break-inside: avoid;
     }
-    /* Force page break before each instrument section except the first */
     #pdfContent .instrument-section:not(:first-child) {
         page-break-before: always;
         break-before: page;
     }
-    /* Prevent table header from being cut off */
     #pdfContent .cal-table thead {
         display: table-header-group;
     }
-    /* Reduce padding for better fit */
     #pdfContent {
-        padding: 8px 10px 10px 10px;
+        padding: 18px 24px 24px 24px;
     }
     #pdfFooter {
         text-align: right;
-        font-size: 12px;
+        font-size: 13px;
         color: #888;
-        margin-top: 30px;
+        margin-top: 36px;
+    }
+    #pdfContent em {
+        color: #b0bec5;
+    }
+    #pdfContent strong {
+        color: #222;
+    }
+    #pdfContent .signature-img {
+        border: 1px solid #b8a1e3;
+        max-width: 220px;
+        border-radius: 4px;
+        margin-top: 6px;
+        margin-bottom: 6px;
+        background: #fafbfc;
     }
     </style>
 </head>
