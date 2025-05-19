@@ -122,4 +122,98 @@
         document.getElementById('addInstrument').addEventListener('click', () => {
             instrumentCount++;
             const container = document.getElementById('instrumentContainer');
-            const instrument
+            const instrumentDiv = document.createElement('div');
+            instrumentDiv.className = 'instrument mb-3';
+            instrumentDiv.innerHTML = `
+                <h3>Instrument ${instrumentCount}</h3>
+                <div class="mb-3">
+                    <label class="form-label">Instrument Type:</label>
+                    <input type="text" class="form-control instrumentType" placeholder="e.g., Pressure Transmitter">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Manufacturer:</label>
+                    <input type="text" class="form-control manufacturer" placeholder="e.g., Yokogawa">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Model:</label>
+                    <input type="text" class="form-control model" placeholder="e.g., EJA530E">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Range:</label>
+                    <input type="text" class="form-control range" placeholder="e.g., 0-100 PSI">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Accuracy:</label>
+                    <input type="text" class="form-control accuracy" placeholder="e.g., ±0.1%">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Last Calibration Date:</label>
+                    <input type="date" class="form-control lastCalibrationDate">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Inspection Result:</label>
+                    <textarea class="form-control inspectionResult" rows="3" placeholder="e.g., Passed, adjustments needed, etc."></textarea>
+                </div>
+            `;
+            container.appendChild(instrumentDiv);
+        });
+
+        document.getElementById('generatePdf').addEventListener('click', () => {
+            // Copy form data to pdfContent
+            document.getElementById('pdfHeader').textContent = document.getElementById('docHeader').value;
+            document.getElementById('pdfInfo').textContent = document.getElementById('docInfo').value;
+
+            const instruments = document.querySelectorAll('#instrumentContainer .instrument');
+            let instrumentsHtml = '';
+            instruments.forEach((inst, idx) => {
+                const type = inst.querySelector('.instrumentType').value;
+                const manufacturer = inst.querySelector('.manufacturer').value;
+                const model = inst.querySelector('.model').value;
+                const range = inst.querySelector('.range').value;
+                const accuracy = inst.querySelector('.accuracy').value;
+                const lastCal = inst.querySelector('.lastCalibrationDate').value;
+                const result = inst.querySelector('.inspectionResult').value;
+
+                instrumentsHtml += `
+                    <div>
+                        <h3>Instrument ${idx + 1}</h3>
+                        <p><strong>Type:</strong> ${type}</p>
+                        <p><strong>Manufacturer:</strong> ${manufacturer}</p>
+                        <p><strong>Model:</strong> ${model}</p>
+                        <p><strong>Range:</strong> ${range}</p>
+                        <p><strong>Accuracy:</strong> ${accuracy}</p>
+                        <p><strong>Last Calibration Date:</strong> ${lastCal}</p>
+                        <p><strong>Inspection Result:</strong> ${result}</p>
+                        <hr>
+                    </div>
+                `;
+            });
+            document.getElementById('pdfInstruments').innerHTML = instrumentsHtml;
+
+            // Hide the form and show the PDF content
+            const form = document.getElementById('instrumentForm');
+            const pdfContent = document.getElementById('pdfContent');
+            form.style.display = 'none';
+            pdfContent.style.display = 'block';
+
+            // Give the browser a moment to render the visible content
+            setTimeout(() => {
+                html2pdf()
+                    .set({
+                        margin: 0.5,
+                        filename: 'Instrumentation_Report.pdf',
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, backgroundColor: '#fff' },
+                        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                    })
+                    .from(pdfContent)
+                    .save()
+                    .then(() => {
+                        pdfContent.style.display = 'none';
+                        form.style.display = 'block';
+                    });
+            }, 200);
+        });
+    </script>
+</body>
+</html>
