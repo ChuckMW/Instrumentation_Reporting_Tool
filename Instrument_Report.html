@@ -210,12 +210,6 @@
                 <label class="form-label">Reviewer/Approver Name:</label>
                 <input type="text" id="reviewerName" class="form-control" placeholder="Enter reviewer/approver name">
             </div>
-            <div class="mb-3">
-                <label class="form-label">Reviewer/Approver Signature:</label><br>
-                <canvas id="reviewerSignaturePad" width="400" height="120" style="border:1px solid #ccc; background:#fff;"></canvas>
-                <br>
-                <button type="button" id="clearReviewerSignature" class="btn btn-secondary btn-sm mt-2">Clear Reviewer Signature</button>
-            </div>
             <button type="button" id="addInstrument" class="btn btn-primary mb-3">Add Another Instrument</button>
             <button type="button" id="generatePdf" class="btn btn-success">Generate PDF</button>
         </form>
@@ -483,9 +477,8 @@
 
             // Inspector signature
             const signatureDataUrl = signaturePad && !signaturePad.isEmpty() ? signaturePad.toDataURL() : '';
-            // Reviewer signature
+            // Reviewer name only (signature removed)
             const reviewerName = document.getElementById('reviewerName').value;
-            const reviewerSignatureDataUrl = reviewerSignaturePad && !reviewerSignaturePad.isEmpty() ? reviewerSignaturePad.toDataURL() : '';
 
             document.getElementById('pdfFooter').innerHTML = `
                 Report generated on ${new Date().toISOString().slice(0,10)}
@@ -494,8 +487,7 @@
                     ${signatureDataUrl ? `<img src="${signatureDataUrl}" style="border:1px solid #ccc; max-width:200px;">` : '<em>No signature provided</em>'}
                 </div>
                 <div style="margin-top:20px;">
-                    <strong>Reviewer/Approver:</strong> ${reviewerName || '<em>No name provided</em>'}<br>
-                    ${reviewerSignatureDataUrl ? `<img src="${reviewerSignatureDataUrl}" style="border:1px solid #ccc; max-width:200px;">` : '<em>No signature provided</em>'}
+                    <strong>Reviewer/Approver:</strong> ${reviewerName || '<em>No name provided</em>'}
                 </div>
             `;
 
