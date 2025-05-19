@@ -139,6 +139,10 @@
                         <input type="text" class="form-control calibrationData" placeholder="e.g., 0,10,20,30,40,50">
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Actual Values (comma-separated):</label>
+                        <input type="text" class="form-control actualData" placeholder="e.g., 0,9.8,20.2,29.9,40.1,50.3">
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Calibration Graph Preview:</label>
                         <canvas class="calibrationChart" width="400" height="200" style="background:#fff;"></canvas>
                     </div>
@@ -219,6 +223,10 @@
                     <input type="text" class="form-control calibrationData" placeholder="e.g., 0,10,20,30,40,50">
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">Actual Values (comma-separated):</label>
+                    <input type="text" class="form-control actualData" placeholder="e.g., 0,9.8,20.2,29.9,40.1,50.3">
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Calibration Graph Preview:</label>
                     <canvas class="calibrationChart" width="400" height="200" style="background:#fff;"></canvas>
                 </div>
@@ -231,29 +239,42 @@
         document.querySelectorAll('.instrument').forEach(setupChartForInstrument);
 
         function setupChartForInstrument(instrumentDiv) {
-            const input = instrumentDiv.querySelector('.calibrationData');
+            const calInput = instrumentDiv.querySelector('.calibrationData');
+            const actInput = instrumentDiv.querySelector('.actualData');
             const canvas = instrumentDiv.querySelector('.calibrationChart');
             let chart;
             function updateChart() {
-                const data = input.value.split(',').map(Number).filter(x => !isNaN(x));
+                const calData = calInput.value.split(',').map(Number).filter(x => !isNaN(x));
+                const actData = actInput.value.split(',').map(Number).filter(x => !isNaN(x));
                 if (chart) chart.destroy();
                 chart = new Chart(canvas, {
                     type: 'line',
                     data: {
-                        labels: data.map((_, i) => `Pt ${i+1}`),
-                        datasets: [{
-                            label: 'Calibration Data',
-                            data: data,
-                            borderColor: '#6200ea',
-                            backgroundColor: 'rgba(98,0,234,0.1)',
-                            fill: true,
-                            tension: 0.2
-                        }]
+                        labels: calData.map((_, i) => `Pt ${i+1}`),
+                        datasets: [
+                            {
+                                label: 'Calibration Data',
+                                data: calData,
+                                borderColor: '#6200ea',
+                                backgroundColor: 'rgba(98,0,234,0.1)',
+                                fill: true,
+                                tension: 0.2
+                            },
+                            {
+                                label: 'Actual Values',
+                                data: actData,
+                                borderColor: '#03dac6',
+                                backgroundColor: 'rgba(3,218,198,0.1)',
+                                fill: false,
+                                tension: 0.2
+                            }
+                        ]
                     },
-                    options: { responsive: false, plugins: { legend: { display: false } } }
+                    options: { responsive: false, plugins: { legend: { display: true } } }
                 });
             }
-            input.addEventListener('input', updateChart);
+            calInput.addEventListener('input', updateChart);
+            actInput.addEventListener('input', updateChart);
         }
 
         document.getElementById('generatePdf').addEventListener('click', async () => {
@@ -267,7 +288,47 @@
 
             // Prepare calibration chart images
             const chartImages = [];
+            const errorTables = [];
             for (const inst of instruments) {
+                const calData = inst.querySelector('.calibrationData').value.split(',').map(Number);
+                const actData = inst.querySelector('.actualData').value.split(',').map(Number);
+                // Calculate % error
+                let errorRows = '';
+                for (let i = 0; i < Math.max(calData.length, actData.length); i++) {
+                    const cal = calData[i];
+                    const act = actData[i];
+                    let err = '';
+                    if (typeof cal === 'number' && !isNaN(cal) && typeof act === 'number' && !isNaN(act)) {
+                        if (cal === 0) {
+                            err = 'N/A';
+                        } else {
+                            err = (((act - cal) / cal) * 100).toFixed(2) + '%';
+                        }
+                    } else {
+                        err = '';
+                    }
+                    errorRows += `<tr>
+                        <td>${i+1}</td>
+                        <td>${isNaN(cal) ? '' : cal}</td>
+                        <td>${isNaN(act) ? '' : act}</td>
+                        <td>${err}</td>
+                    </tr>`;
+                }
+                errorTables.push(`
+                    <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+                        <thead>
+                            <tr style="background:#eee;">
+                                <th style="border:1px solid #ccc;padding:4px;">Point</th>
+                                <th style="border:1px solid #ccc;padding:4px;">Calibration</th>
+                                <th style="border:1px solid #ccc;padding:4px;">Actual</th>
+                                <th style="border:1px solid #ccc;padding:4px;">% Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${errorRows}
+                        </tbody>
+                    </table>
+                `);
                 const canvas = inst.querySelector('.calibrationChart');
                 chartImages.push(canvas ? canvas.toDataURL('image/png') : null);
             }
@@ -283,6 +344,7 @@
                 const result = inst.querySelector('.inspectionResult').value;
                 const desc = inst.querySelector('.inspectionDescription').value;
                 const calData = inst.querySelector('.calibrationData').value;
+                const actData = inst.querySelector('.actualData').value;
                 const calNum = `CAL-${dateStr.replace(/-/g, '')}-${idx + 1}`;
 
                 instrumentsHtml += `
@@ -299,7 +361,9 @@
                         <p><strong>Inspection Result:</strong> ${result}</p>
                         <p><strong>Inspection Description:</strong> ${desc}</p>
                         <p><strong>Calibration Data:</strong> ${calData}</p>
+                        <p><strong>Actual Values:</strong> ${actData}</p>
                         <img src="${chartImages[idx]}" alt="Calibration Graph" style="max-width:400px; border:1px solid #ccc; margin:10px 0;">
+                        <div><strong>Calibration Error Table:</strong>${errorTables[idx]}</div>
                     </div>
                 `;
             });
