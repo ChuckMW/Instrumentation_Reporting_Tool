@@ -41,6 +41,8 @@
         background: #f8f9fa;
         min-height: 100vh;
         box-sizing: border-box;
+        /* Add these: */
+        word-break: break-word;
     }
     #pdfContent h1 {
         font-size: 28px;
@@ -65,6 +67,8 @@
         margin-bottom: 18px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 18px;
     }
     #pdfContent p {
         margin: 4px 0;
@@ -80,6 +84,10 @@
         margin-top: 10px;
         font-size: 14px;
         background: #fafbfc;
+        /* Add these: */
+        page-break-inside: auto;
+        break-inside: auto;
+        word-break: break-word;
     }
     #pdfContent .cal-table th, #pdfContent .cal-table td {
         border: 1px solid #bbb;
@@ -100,6 +108,21 @@
     }
     #pdfContent .section {
         margin-bottom: 18px;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    /* Force page break before each instrument section except the first */
+    #pdfContent .instrument-section:not(:first-child) {
+        page-break-before: always;
+        break-before: page;
+    }
+    /* Prevent table header from being cut off */
+    #pdfContent .cal-table thead {
+        display: table-header-group;
+    }
+    /* Reduce padding for better fit */
+    #pdfContent {
+        padding: 8px 10px 10px 10px;
     }
     #pdfFooter {
         text-align: right;
