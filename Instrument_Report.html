@@ -121,6 +121,29 @@
                 <label for="docInfo" class="form-label">Document Information:</label>
                 <textarea id="docInfo" class="form-control" rows="3" placeholder="Enter details about the document (e.g., purpose, author, etc.)"></textarea>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Environmental Conditions:</label>
+                <div class="row">
+                    <div class="col">
+                        <input type="number" step="0.1" id="envTemp" class="form-control" placeholder="Temperature (°C)">
+                    </div>
+                    <div class="col">
+                        <input type="number" step="0.1" id="envHumidity" class="form-control" placeholder="Humidity (%)">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Reference Standard Used:</label>
+                <input type="text" id="refStandard" class="form-control" placeholder="e.g., Fluke 754, Serial: 12345, Cert: 2025-06-01">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Calibration Procedure/Method:</label>
+                <input type="text" id="calProcedure" class="form-control" placeholder="e.g., IEC 61298-2, Internal SOP-01">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Uncertainty of Measurement (%):</label>
+                <input type="number" step="0.0001" id="uncertainty" class="form-control" placeholder="e.g., 0.05">
+            </div>
             <div id="instrumentContainer">
                 <div class="instrument mb-3">
                     <h3>Instrument 1</h3>
@@ -183,6 +206,16 @@
                 <br>
                 <button type="button" id="clearSignature" class="btn btn-secondary btn-sm mt-2">Clear Signature</button>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Reviewer/Approver Name:</label>
+                <input type="text" id="reviewerName" class="form-control" placeholder="Enter reviewer/approver name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Reviewer/Approver Signature:</label><br>
+                <canvas id="reviewerSignaturePad" width="400" height="120" style="border:1px solid #ccc; background:#fff;"></canvas>
+                <br>
+                <button type="button" id="clearReviewerSignature" class="btn btn-secondary btn-sm mt-2">Clear Reviewer Signature</button>
+            </div>
             <button type="button" id="addInstrument" class="btn btn-primary mb-3">Add Another Instrument</button>
             <button type="button" id="generatePdf" class="btn btn-success">Generate PDF</button>
         </form>
@@ -191,6 +224,10 @@
     <div id="pdfContent" style="display:none">
         <h1 id="pdfHeader"></h1>
         <p id="pdfInfo" class="section"></p>
+        <div id="pdfEnv" class="section"></div>
+        <div id="pdfRefStd" class="section"></div>
+        <div id="pdfCalProc" class="section"></div>
+        <div id="pdfUncertainty" class="section"></div>
         <div id="pdfInstruments" class="section"></div>
         <div id="pdfFooter"></div>
     </div>
@@ -198,13 +235,18 @@
     <script>
         let instrumentCount = 1;
         let signaturePad;
+        let reviewerSignaturePad;
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Initialize signature pad
+            // Inspector signature
             const canvas = document.getElementById('signaturePad');
             signaturePad = new SignaturePad(canvas);
-
             document.getElementById('clearSignature').onclick = () => signaturePad.clear();
+
+            // Reviewer signature
+            const reviewerCanvas = document.getElementById('reviewerSignaturePad');
+            reviewerSignaturePad = new SignaturePad(reviewerCanvas);
+            document.getElementById('clearReviewerSignature').onclick = () => reviewerSignaturePad.clear();
         });
 
         document.getElementById('addInstrument').addEventListener('click', () => {
@@ -324,6 +366,22 @@
             document.getElementById('pdfHeader').textContent = document.getElementById('docHeader').value;
             document.getElementById('pdfInfo').textContent = document.getElementById('docInfo').value;
 
+            // New IEC fields
+            document.getElementById('pdfEnv').innerHTML = `
+                <strong>Environmental Conditions:</strong>
+                Temperature: ${document.getElementById('envTemp').value || '-'} °C,
+                Humidity: ${document.getElementById('envHumidity').value || '-'} %
+            `;
+            document.getElementById('pdfRefStd').innerHTML = `
+                <strong>Reference Standard Used:</strong> ${document.getElementById('refStandard').value || '-'}
+            `;
+            document.getElementById('pdfCalProc').innerHTML = `
+                <strong>Calibration Procedure/Method:</strong> ${document.getElementById('calProcedure').value || '-'}
+            `;
+            document.getElementById('pdfUncertainty').innerHTML = `
+                <strong>Uncertainty of Measurement:</strong> ${document.getElementById('uncertainty').value || '-'} %
+            `;
+
             const instruments = document.querySelectorAll('#instrumentContainer .instrument');
             let instrumentsHtml = '';
             const today = new Date();
@@ -423,13 +481,21 @@
             });
             document.getElementById('pdfInstruments').innerHTML = instrumentsHtml;
 
-            // Signature
+            // Inspector signature
             const signatureDataUrl = signaturePad && !signaturePad.isEmpty() ? signaturePad.toDataURL() : '';
+            // Reviewer signature
+            const reviewerName = document.getElementById('reviewerName').value;
+            const reviewerSignatureDataUrl = reviewerSignaturePad && !reviewerSignaturePad.isEmpty() ? reviewerSignaturePad.toDataURL() : '';
+
             document.getElementById('pdfFooter').innerHTML = `
-                Report generated on ${dateStr}
+                Report generated on ${new Date().toISOString().slice(0,10)}
                 <div style="margin-top:20px;">
                     <strong>Inspector Signature:</strong><br>
                     ${signatureDataUrl ? `<img src="${signatureDataUrl}" style="border:1px solid #ccc; max-width:200px;">` : '<em>No signature provided</em>'}
+                </div>
+                <div style="margin-top:20px;">
+                    <strong>Reviewer/Approver:</strong> ${reviewerName || '<em>No name provided</em>'}<br>
+                    ${reviewerSignatureDataUrl ? `<img src="${reviewerSignatureDataUrl}" style="border:1px solid #ccc; max-width:200px;">` : '<em>No signature provided</em>'}
                 </div>
             `;
 
