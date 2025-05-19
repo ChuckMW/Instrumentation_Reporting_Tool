@@ -312,6 +312,14 @@
             actInput.addEventListener('input', updateChart);
         }
 
+        function generateCalibrationNumber(idx) {
+            // Example: CAL-20250519-1-XYZ12A (date + instrument idx + random 5-char alphanumeric)
+            const today = new Date();
+            const dateStr = today.toISOString().slice(0,10).replace(/-/g, '');
+            const rand = Math.random().toString(36).substring(2, 7).toUpperCase();
+            return `CAL-${dateStr}-${idx + 1}-${rand}`;
+        }
+
         document.getElementById('generatePdf').addEventListener('click', async () => {
             document.getElementById('pdfHeader').textContent = document.getElementById('docHeader').value;
             document.getElementById('pdfInfo').textContent = document.getElementById('docInfo').value;
@@ -380,7 +388,7 @@
                 const desc = inst.querySelector('.inspectionDescription').value;
                 const calData = inst.querySelector('.calibrationData').value;
                 const actData = inst.querySelector('.actualData').value;
-                const calNum = `CAL-${dateStr.replace(/-/g, '')}-${idx + 1}`;
+                const calNum = generateCalibrationNumber(idx);
 
                 instrumentsHtml += `
                     <div class="instrument-section">
