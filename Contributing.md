@@ -1,6 +1,4 @@
-# Contributing to OpenPLCLogic 🚀
-
-Thank you for considering contributing to OpenPLCLogic! Your help is greatly appreciated. 🤝
+# Contributing 
 
 ## How to Contribute
 
